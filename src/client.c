@@ -28,7 +28,7 @@ void usage(char *emsg) {
 	fprintf(stderr,
 		"Ethernet message caching client\n\n"
 		"Error:\n"
-		"\t%s\n" 
+		"\t%s\n"
 		"Usage:\n"
 		"\tclient SRC_NIC MAC_DST 0-127 'Message to send'\n"
 		"\tclient SRC_NIC MAC_DST 0-127\n"
@@ -73,13 +73,11 @@ int main(int argc, char *argv[]) {
 	memcpy(src.ether_addr_octet, (struct ether_addr *)&ifrq.ifr_hwaddr.sa_data,
 			sizeof(struct ether_addr));
 
-	/* printf("DEBUG SRC MAC: %s\n", ether_ntoa(&src)); */
-
 	memset(&ec, 0, sizeof(ec));
 	memcpy(&ec.fm.eh.ether_dhost, dst, ETH_ALEN);
 	memcpy(&ec.fm.eh.ether_shost, &src, ETH_ALEN);
 	/* Ethernet type < 1500 == 802.3 frame */
-	ec.fm.eh.ether_type = htons(sizeof(ec.fm.pl)); 
+	ec.fm.eh.ether_type = htons(sizeof(ec.fm.pl));
 	ec.fm.pl.pp = 0xFFFF;			/* Novell raw 802.3 */
 
 
@@ -88,11 +86,9 @@ int main(int argc, char *argv[]) {
 		memcpy(&ec.fm.pl.pl, argv[4], strnlen(argv[4], ETH_DATA_LEN));
 	} else		 			/* Retrieve a message by ID */
 		ec.fm.pl.cmd = mid | 0x80;
-	
-	/* ec.crc = computeCrc32((char *)&ec.fm, sizeof(ec.fm)); */
-	ec.crc = htonl(calk_crc32((char *)&ec.fm, sizeof(ec.fm)));
-	/* if (!verifyEthernetFrameFcs((char *)&ec, sizeof(ec)))  */
-	if (!verify_crc32((char *)&ec, sizeof(ec))) 
+
+	ec.crc = htonl(calc_crc32((char *)&ec.fm, sizeof(ec.fm)));
+	if (!verify_crc32((char *)&ec, sizeof(ec)))
 		fprintf(stderr,
 			"Warning: Incorrect Frame Check Sequence! %x\n", ec.crc);
 
@@ -103,29 +99,18 @@ int main(int argc, char *argv[]) {
 	dst_addr.sll_family = AF_PACKET;
 	dst_addr.sll_protocol = htons(ETH_P_802_3);
 	dst_addr.sll_ifindex = ifrq.ifr_ifindex;	/* to bind socket 0 - any
-						   	1 - loopback; 
+							1 - loopback;
 							2 - first nic. */
-	/* dst_addr.sll_hatype = 1; */	/* ARPHRD_ETHER from linux/if_arp.h */
-	/* dst_addr.sll_pkttype */	/* make sense only for receivin */
 	dst_addr.sll_halen = ETH_ALEN;
 	memcpy(dst_addr.sll_addr, dst, ETH_ALEN);
 
-/*
-	printf("DEBUG ET      : %d\n", ec.fm.eh.ether_type);
-	printf("DEBUG EC SZ   : %ld\n", sizeof(ec));
-	printf("DEBUG FM SZ   : %ld\n", sizeof(ec.fm));
-	printf("DEBUG CRC     : %x\n", ec.crc);
-	printf("DEBUG PL SZ   : %ld\n", sizeof(ec.fm.pl));
-	printf("DEBUG PL PP SZ: %ld\n", sizeof(ec.fm.pl.pp));
-	printf("DEBUG PL PL SZ: %ld\n", sizeof(ec.fm.pl.pl));
-*/
 	if (ec.fm.pl.cmd > 0x7F)
-	      	if (bind(s, (struct sockaddr*)&dst_addr,
+		if (bind(s, (struct sockaddr*)&dst_addr,
 			sizeof(struct sockaddr_ll)) == -1)
         	       		err(1, "Unable to bind");
 
 	if (sendto(s,
-		(char *)&ec, sizeof(ec), 0, 
+		(char *)&ec, sizeof(ec), 0,
 		(struct sockaddr*)&dst_addr,
 		sizeof(struct sockaddr_ll)) < 0)
 			err(1, "Unable to send data");
@@ -137,7 +122,7 @@ int main(int argc, char *argv[]) {
 			(struct sockaddr *)&dst_addr, &dst_addr_len) == -1)
 				err(1, "Failed receiving a reply");
 
-		if (!verify_crc32((char *)&ec, sizeof(ec))) 
+		if (!verify_crc32((char *)&ec, sizeof(ec)))
 			fprintf(stderr,
 				"Warning: Received frame with Incorrect FCS! %x\n",
 				ec.crc);

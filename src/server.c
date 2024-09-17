@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 
 	if (argc != 2)
 		usage("Wrong number of arguments specified");
-	
+
 	if ((s = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_802_3))) == -1)
 		err(1, "Unable to create a socket");
 
@@ -89,10 +89,10 @@ int main(int argc, char *argv[]) {
 				err(1, "Unable to receive data");
 		smac = ether_ntoa((struct ether_addr *)&sl_addr.sll_addr);
 
-                if (!verify_crc32((char *)&ec, sizeof(ec)))
-                        fprintf(stderr,
-                                "Warning: Received frame with Incorrect FCS! %x\n",
-                                ec.crc);
+		if (!verify_crc32((char *)&ec, sizeof(ec)))
+			fprintf(stderr,
+				"Warning: Received frame with Incorrect FCS! %x\n",
+				ec.crc);
 
 		if (ec.fm.pl.cmd < 0x80) {
 			/* Save in cache */
@@ -111,9 +111,7 @@ int main(int argc, char *argv[]) {
 			memcpy(&ec.fm.eh.ether_shost, &mac, ETH_ALEN);
 			mid = ec.fm.pl.cmd &~ 0x80;
 			memcpy(&ec.fm.pl.pl, buffer[mid], sizeof(ec.fm.pl.pl));
-			/* ec.crc = computeCrc32((char *)&ec.fm, sizeof(ec.fm)); */
-			ec.crc = htonl(calk_crc32((char *)&ec.fm, sizeof(ec.fm)));
-			/* if (!verifyEthernetFrameFcs((char *)&ec, sizeof(ec))) */
+			ec.crc = htonl(calc_crc32((char *)&ec.fm, sizeof(ec.fm)));
 			if (!verify_crc32((char *)&ec, sizeof(ec)))
 				fprintf(stderr,
 					"Warning: Incorrect Frame Check Sequence!\n");
@@ -123,7 +121,7 @@ int main(int argc, char *argv[]) {
 				(struct sockaddr*)&sl_addr,
 				sizeof(struct sockaddr_ll)) < 0)
 					err(1, "Unable to send data");
-		
+
 			printf("TO:\t%s #%03d: [%s]\n", smac, mid,
 				ec.fm.pl.pl[0] ? (char*)ec.fm.pl.pl : "<Free slot>");
 

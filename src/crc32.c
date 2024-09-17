@@ -1,7 +1,7 @@
 #include <stdint.h>
 
 /* ---------------------------------------------------------------------------- */
-uint32_t calk_crc32(const uint8_t *data, unsigned data_len) {
+uint32_t calc_crc32(const uint8_t *data, unsigned data_len) {
 	uint32_t i, j, bit;
 	uint32_t crc;
 	const static uint32_t polynomial = 0x04c11db7U;
@@ -34,6 +34,6 @@ uint32_t calk_crc32(const uint8_t *data, unsigned data_len) {
 
 /* ---------------------------------------------------------------------------- */
 uint32_t verify_crc32(char *fm, int size) {
-        return calk_crc32(fm, size) == 0x38FB2284;
+        return calc_crc32(fm, size) == 0x38FB2284;
 }
 
