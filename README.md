@@ -1,8 +1,8 @@
-# EC - Ethernet message caching
+# Ethernet messagging using raw-sockets in Linux
 
 ## Description
 
-Very basic, for education purposes implementation of message caching `Server` and `Client` that work over Ethernet.
+Ethernet cache (EC) - very basic, for education purposes, implementation of message caching `Server` and `Client` that work over Ethernet using raw-sockets in Linux.
 `Client` sends a request with a `command` and a `message` with an `ID` from 0 to 127, and the `server` stores or returns a `message` depending on the `command`: `save` or, respectively,  `retrieve` it.
 
 ## Build
