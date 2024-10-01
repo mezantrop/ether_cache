@@ -1,4 +1,4 @@
-# Ethernet messagging using raw-sockets in Linux
+# Ethernet messaging using raw-sockets in Linux
 
 ## Description
 
